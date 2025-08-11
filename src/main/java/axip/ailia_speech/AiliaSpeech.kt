@@ -20,50 +20,13 @@ data class AiliaSpeechText(
 )
 
 class AiliaSpeech(
-    task: Int, // translate | transcribe | live
+    envId: Int = -1, // Ailia.ENVIRONMENT_ID_AUTO
+    numThread: Int = 0, // Ailia.MULTITHREAD_AUTO
+    memoryMode: Int = 11, // Ailia.MEMORY_REDUCE_CONSTANT or MEMORY_REDUCE_CONSTANT_WITH_INPUT_INITIALIZER or MEMORY_REUSE_INTERSTAGE,
+    task: Int = AILIA_SPEECH_TASK_TRANSCRIBE,
+    flags: Int = AILIA_SPEECH_FLAG_NONE,
 ) {
     companion object {
-        /****************************************************************
-         * ailia定義
-         **/
-
-        /**
-         * Number of threads
-         */
-        const val MULTITHREAD_AUTO: Int = 0
-
-        /**
-         * Automatic setup of the inference backend
-         */
-        const val ENVIRONMENT_ID_AUTO: Int = -1
-
-        /**
-         * Do not release the intermediate buffer
-         */
-        const val MEMORY_NO_OPTIMIZATION: Int = 0
-
-        /**
-         * Releases the intermediate buffer that is a constant such as weight
-         */
-        const val MEMORY_REDUCE_CONSTANT: Int = 1
-
-        /**
-         * Disable the input specified initializer and release the intermediate buffer that becomes a constant such as weight.
-         */
-        const val MEMORY_REDUCE_CONSTANT_WITH_INPUT_INITIALIZER: Int = 2
-
-        /**
-         * Release intermediate buffer during inference
-         */
-        const val MEMORY_REDUCE_INTERSTAGE: Int = 4
-
-        /**
-         * Infer by sharing the intermediate buffer. When used with [.MEMORY_REDUCE_INTERSTAGE], the sharable intermediate buffer is not opened.
-         */
-        const val MEMORY_REUSE_INTERSTAGE: Int = 8
-
-        const val MEMORY_OPTIMAIZE_DEFAULT: Int = MEMORY_REDUCE_CONSTANT
-
         /****************************************************************
          * モデルタイプ定義
          **/
@@ -314,8 +277,7 @@ class AiliaSpeech(
     private var ailiaSpeech: Long = 0
 
     init {
-        val memoryMode = MEMORY_REDUCE_CONSTANT or MEMORY_REDUCE_CONSTANT_WITH_INPUT_INITIALIZER or MEMORY_REUSE_INTERSTAGE
-        ailiaSpeech = create(ENVIRONMENT_ID_AUTO, MULTITHREAD_AUTO, memoryMode, task, 0)
+        ailiaSpeech = create(envId, numThread, memoryMode, task, flags)
     }
 
     fun close() {
