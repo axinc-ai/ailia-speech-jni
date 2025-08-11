@@ -1,11 +1,5 @@
 package axip.ailia_speech
 
-import axip.ailia.Ailia.ENVIRONMENT_ID_AUTO
-import axip.ailia.Ailia.MEMORY_REDUCE_CONSTANT
-import axip.ailia.Ailia.MEMORY_REDUCE_CONSTANT_WITH_INPUT_INITIALIZER
-import axip.ailia.Ailia.MEMORY_REUSE_INTERSTAGE
-import axip.ailia.Ailia.MULTITHREAD_AUTO
-
 interface IntermediateCallback {
     /**
      * Called when intermediate speech recognition results are available.
@@ -26,9 +20,50 @@ data class AiliaSpeechText(
 )
 
 class AiliaSpeech(
-    task: String, // translate | transcribe | live
+    task: Int, // translate | transcribe | live
 ) {
     companion object {
+        /****************************************************************
+         * ailia定義
+         **/
+
+        /**
+         * Number of threads
+         */
+        const val MULTITHREAD_AUTO: Int = 0
+
+        /**
+         * Automatic setup of the inference backend
+         */
+        const val ENVIRONMENT_ID_AUTO: Int = -1
+
+        /**
+         * Do not release the intermediate buffer
+         */
+        const val MEMORY_NO_OPTIMIZATION: Int = 0
+
+        /**
+         * Releases the intermediate buffer that is a constant such as weight
+         */
+        const val MEMORY_REDUCE_CONSTANT: Int = 1
+
+        /**
+         * Disable the input specified initializer and release the intermediate buffer that becomes a constant such as weight.
+         */
+        const val MEMORY_REDUCE_CONSTANT_WITH_INPUT_INITIALIZER: Int = 2
+
+        /**
+         * Release intermediate buffer during inference
+         */
+        const val MEMORY_REDUCE_INTERSTAGE: Int = 4
+
+        /**
+         * Infer by sharing the intermediate buffer. When used with [.MEMORY_REDUCE_INTERSTAGE], the sharable intermediate buffer is not opened.
+         */
+        const val MEMORY_REUSE_INTERSTAGE: Int = 8
+
+        const val MEMORY_OPTIMAIZE_DEFAULT: Int = MEMORY_REDUCE_CONSTANT
+
         /****************************************************************
          * モデルタイプ定義
          **/
@@ -283,7 +318,7 @@ class AiliaSpeech(
         ailiaSpeech = create(ENVIRONMENT_ID_AUTO, MULTITHREAD_AUTO, memoryMode, task, 0)
     }
 
-    fun destroy() {
+    fun close() {
         destroy(ailiaSpeech)
     }
 
@@ -375,7 +410,7 @@ class AiliaSpeech(
     ///
     // JNI
     ///
-    private external fun create(env_id: Int, num_thread: Int, memory_mode: Int, task: String, flags: Int): Long
+    private external fun create(env_id: Int, num_thread: Int, memory_mode: Int, task: Int, flags: Int): Long
 
     private external fun destroy(handle: Long)
 
