@@ -14,7 +14,7 @@ data class AiliaSpeechText(
     var text: String? = null,
     var timeStampBegin: Float = 0f,
     var timeStampEnd: Float = 0f,
-    var personId: Int = 0,
+    var speakerId: Int = 0,
     var language: String? = null,
     var confidence: Float = 0f
 )
@@ -259,14 +259,14 @@ class AiliaSpeech(
 
         /**
          * \~japanese
-         * @def AILIA_SPEECH_TEXT_PERSON_ID_UNKNOWN
-         * @brief person_id が無効であることを示す値 (話者分離無効時などに設定される)
+         * @def AILIA_SPEECH_SPEAKER_ID_UNKNOWN
+         * @brief speaker_id が無効であることを示す値 (話者分離無効時などに設定される)
          *
          * \~english
-         * @def AILIA_SPEECH_TEXT_PERSON_ID_UNKNOWN
-         * @brief indicate that person_id is invalid (set when speaker separation is disabled, etc.)
+         * @def AILIA_SPEECH_SPEAKER_ID_UNKNOWN
+         * @brief indicate that speaker_id is invalid (set when speaker separation is disabled, etc.)
          */
-        const val AILIA_SPEECH_TEXT_PERSON_ID_UNKNOWN = (0xFFFFFFFF)
+        const val AILIA_SPEECH_SPEAKER_ID_UNKNOWN = (0xFFFFFFFF)
 
 
         init {
