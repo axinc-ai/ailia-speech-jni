@@ -371,6 +371,24 @@ class AiliaSpeech(
     }
 
     /**
+     * Performs one inference with dummy input to build the graph in advance.
+     *
+     * For runtimes such as QNN that build the graph at the first inference,
+     * this method performs one inference with silent dummy input to reduce
+     * the latency of the first [transcribe].
+     * This method must be called after [openModel].
+     * For Whisper, only the encoder, whose input shape is always fixed, is
+     * warmed up (the decoder is excluded because it requires dynamic shapes).
+     * For SenseVoice, [setStaticInputLength] must be set;
+     * otherwise an error is returned.
+     *
+     * @return 0 if successful, otherwise an error code.
+     */
+    fun warmup(): Int {
+        return warmup(ailiaSpeech)
+    }
+
+    /**
      * Sets the callback for receiving intermediate recognition results.
      *
      * @param callback Callback called when intermediate results are available.
@@ -469,6 +487,8 @@ class AiliaSpeech(
     private external fun setStaticInputLength(handle: Long, input_in_seconds: Int): Int
 
     private external fun setEnvId(handle: Long, target: Int, env_id: Int): Int
+
+    private external fun warmup(handle: Long): Int
 
     private external fun setIntermediateCallback(handle: Long, callback: IntermediateCallback): Int
 
