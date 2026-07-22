@@ -139,6 +139,17 @@ class AiliaSpeech(
         /** FuguMT translation from Japanese to English. */
         const val AILIA_SPEECH_POST_PROCESS_TYPE_FUGUMT_JA_EN = (2)
 
+        // Targets of setEnvId
+
+        /** Encoder. */
+        const val AILIA_SPEECH_MODEL_TARGET_ENCODER = (0)
+
+        /** Decoder. */
+        const val AILIA_SPEECH_MODEL_TARGET_DECODER = (1)
+
+        /** VAD. */
+        const val AILIA_SPEECH_MODEL_TARGET_VAD = (2)
+
         /** Indicates that speaker_id is invalid (set when speaker diarization is disabled, etc.). */
         const val AILIA_SPEECH_SPEAKER_ID_UNKNOWN = (0xFFFFFFFF)
 
@@ -326,6 +337,58 @@ class AiliaSpeech(
     }
 
     /**
+     * Fixes the input shape of the graph to the specified length in seconds.
+     *
+     * This method must be called before [openModel].
+     * When the input is shorter than the fixed length, it is zero padded
+     * before inference. The VAD uses the shorter of 30 seconds and
+     * [inputInSeconds] as the upper limit of the segment.
+     * Currently only AILIA_SPEECH_MODEL_TYPE_SENSEVOICE_SMALL is supported;
+     * [openModel] returns an error for the other model types.
+     *
+     * @param inputInSeconds Fixed input length in seconds. 0 means dynamic shape (default).
+     * @return 0 if successful, otherwise an error code.
+     */
+    fun setStaticInputLength(inputInSeconds: Int): Int {
+        return setStaticInputLength(ailiaSpeech, inputInSeconds)
+    }
+
+    /**
+     * Sets the execution environment (env_id) of the specified component individually.
+     *
+     * Overrides the env_id specified in the constructor only for the specified
+     * component. This method must be called before [openModel]
+     * (AILIA_SPEECH_MODEL_TARGET_VAD must be set before [openVad]).
+     * For example, use this method to run only the Whisper encoder on QNN
+     * while the decoder runs on the CPU.
+     *
+     * @param target Target component, one of the AILIA_SPEECH_MODEL_TARGET_* constants.
+     * @param envId Environment id of the ailia execution.
+     * @return 0 if successful, otherwise an error code.
+     */
+    fun setEnvId(target: Int, envId: Int): Int {
+        return setEnvId(ailiaSpeech, target, envId)
+    }
+
+    /**
+     * Performs one inference with dummy input to build the graph in advance.
+     *
+     * For runtimes such as QNN that build the graph at the first inference,
+     * this method performs one inference with silent dummy input to reduce
+     * the latency of the first [transcribe].
+     * This method must be called after [openModel].
+     * For Whisper, only the encoder, whose input shape is always fixed, is
+     * warmed up (the decoder is excluded because it requires dynamic shapes).
+     * For SenseVoice, [setStaticInputLength] must be set;
+     * otherwise an error is returned.
+     *
+     * @return 0 if successful, otherwise an error code.
+     */
+    fun warmup(): Int {
+        return warmup(ailiaSpeech)
+    }
+
+    /**
      * Sets the callback for receiving intermediate recognition results.
      *
      * @param callback Callback called when intermediate results are available.
@@ -420,6 +483,12 @@ class AiliaSpeech(
     private external fun setLanguage(handle: Long, language: String): Int
 
     private external fun setSilentThreshold(handle: Long, silent_threshold: Float, speech_sec: Float, no_speech_sec: Float): Int
+
+    private external fun setStaticInputLength(handle: Long, input_in_seconds: Int): Int
+
+    private external fun setEnvId(handle: Long, target: Int, env_id: Int): Int
+
+    private external fun warmup(handle: Long): Int
 
     private external fun setIntermediateCallback(handle: Long, callback: IntermediateCallback): Int
 
